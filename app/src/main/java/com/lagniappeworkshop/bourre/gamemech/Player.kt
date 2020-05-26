@@ -2,11 +2,7 @@ package com.lagniappeworkshop.bourre.gamemech
 
 class Player constructor(var playerName: String) {
 
-//    var currentHand: Hand
-//        get() = currentHand
-//        set(value) {
-//            field = value
-//        }
+    var currentHand: Hand = Hand(Suit.CLUBS, Suit.CLUBS, ArrayList())
 
     fun haveSuit(suit: Suit) : Boolean {
         return false
