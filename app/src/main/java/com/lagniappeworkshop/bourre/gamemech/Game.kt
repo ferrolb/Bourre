@@ -61,27 +61,32 @@ class Game {
         }
     }
 
-    private fun dealerPlaysAndSetsTrumpAndSuit() {
-        // dealer plays card
-        val card = players[dealerIndex].playAnyCard()
+    private fun dealerSetsTrump() {
+        // dealer shows trump
+        val card = players[dealerIndex].currentHand[0]
         card.faceUp = true
         val player = players[dealerIndex]
-        Log.i("########", "Dealer is ${player.playerName} and he plays ${card.faceValue()}")
-        handInPlay[player] = card
+        Log.i("########", "Dealer is ${player.playerName} and he shows trump card ${card.faceValue()}")
 
-        // dealer sets trump and suit
+        // dealer sets trump
         trumpSuit = card.suit
-        suit = card.suit
-        Log.i("########", "Dealer sets trumpSuit ${trumpSuit.suitName} and suit ${suit.suitName}")
+        Log.i("########", "Dealer sets trumpSuit ${trumpSuit.suitName}")
+        card.faceUp = false
     }
 
     private fun playTrick() {
-        dealerPlaysAndSetsTrumpAndSuit()
         otherPlayersPlayTrick()
     }
 
     private fun otherPlayersPlayTrick() {
         var playerCounter = dealerIndex+1
+        // player next to dealer plays card and sets the suit
+        var nextPlayer = (playerCounter++) % players.size
+        val card = players[nextPlayer].playAnyCard()
+        Log.i("#########", "${players[nextPlayer].playerName} plays ${card.faceValue()}, setting the suit")
+        card.faceUp = true
+        handInPlay[players[nextPlayer]] = card
+        suit = card.suit
         do {
             val nextPlayer = (playerCounter++) % players.size
             // player plays card
@@ -98,10 +103,13 @@ class Game {
         }
     }
 
+    // The trump and suit setting is done
+    // TODO: next determine who wins the trick
     fun playGame() {
         shuffleCards()
         dealCards()
         showCards()
+        dealerSetsTrump()
         playTrick()
         showHandInPlay()
         
