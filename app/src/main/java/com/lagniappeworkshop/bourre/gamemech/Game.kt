@@ -63,22 +63,22 @@ class Game {
         card.faceUp = true
         val player = players[dealerIndex]
         Log.i("########", "Dealer is ${player.playerName} and he shows trump card ${card.faceValue()}")
-
         // dealer sets trump
         trumpSuit = card.suit
-        Log.i("########", "Dealer sets trumpSuit ${trumpSuit.suitName}")
         card.faceUp = false
     }
 
-    private fun playersPlayTrick() {
+    private fun playersPlayTrick(trick: Int) {
         var playerCounter = dealerIndex+1
         // player next to dealer plays card and sets the suit
         var nextPlayer = (playerCounter++) % players.size
         val card = players[nextPlayer].playAnyCard()
-        Log.i("#########", "${players[nextPlayer].playerName} plays ${card.faceValue()}, setting the suit")
+        Log.i("#########", "${players[nextPlayer].playerName} plays ${card.faceValue()}")
         card.faceUp = true
         handInPlay[players[nextPlayer]] = card
-        suit = card.suit
+        if (trick == 1) { // suit only set by first player on first trick
+            suit = card.suit
+        }
         do {
             nextPlayer = (playerCounter++) % players.size
             // player plays card
@@ -86,7 +86,7 @@ class Game {
             Log.i("#########", "${players[nextPlayer].playerName} plays ${card.faceValue()}")
             card.faceUp = true
             handInPlay[players[nextPlayer]] = card
-            players[nextPlayer]
+//            players[nextPlayer]
         } while (players[nextPlayer] != players[dealerIndex])
     }
 
@@ -120,13 +120,13 @@ class Game {
     // TODO: determine hand winner
     fun playGame() {
         shuffleCards()
+        dealCards()
+        dealerSetsTrump()
         for (trick in 1..5) {
             Log.i("#######", "==== Trick $trick =====")
-            dealCards()
             showCards()
-            dealerSetsTrump()
-            playersPlayTrick()
-            showHandInPlay()
+            playersPlayTrick(trick)
+//            showHandInPlay()
             determineTrickWinner()
             Log.i("#######", "=======================")
         }
