@@ -26,7 +26,7 @@ class Game {
     private fun createCards() {
         deck.clear()
         enumValues<Suit>().forEach {
-            for (rank in 2 until 14) {
+            for (rank in 2..14) {
                 deck.add(Card(it, rank, false))
             }
         }
@@ -38,16 +38,12 @@ class Game {
         deck.shuffle()
     }
 
-    private fun dealToPlayer(player:Player) {
-        player.currentHand.add(deck.removeAt(0))
-    }
-
     private fun dealCards() {
         var playerCounter = dealerIndex+1
         for (cardNumber in 1..5) {
             do {
                 val nextPlayer = (playerCounter++) % players.size
-                dealToPlayer(players[nextPlayer])
+                players[nextPlayer].currentHand.add(deck.removeAt(0))
             } while (players[nextPlayer] != players[dealerIndex])
         }
     }
@@ -74,11 +70,7 @@ class Game {
         card.faceUp = false
     }
 
-    private fun playTrick() {
-        otherPlayersPlayTrick()
-    }
-
-    private fun otherPlayersPlayTrick() {
+    private fun playersPlayTrick() {
         var playerCounter = dealerIndex+1
         // player next to dealer plays card and sets the suit
         var nextPlayer = (playerCounter++) % players.size
@@ -88,12 +80,13 @@ class Game {
         handInPlay[players[nextPlayer]] = card
         suit = card.suit
         do {
-            val nextPlayer = (playerCounter++) % players.size
+            nextPlayer = (playerCounter++) % players.size
             // player plays card
             val card = players[nextPlayer].playCardToWin()
             Log.i("#########", "${players[nextPlayer].playerName} plays ${card.faceValue()}")
             card.faceUp = true
             handInPlay[players[nextPlayer]] = card
+            players[nextPlayer]
         } while (players[nextPlayer] != players[dealerIndex])
     }
 
@@ -103,15 +96,39 @@ class Game {
         }
     }
 
+    private fun determineTrickWinner()  {
+        // Highest Trump
+        var highestCard = handInPlay.filter{ it.value.suit == trumpSuit }.maxBy { it.value.rank }
+        if (highestCard == null) {
+            // Highest Suit
+            highestCard = handInPlay.filter{ it.value.suit == suit}.maxBy{it.value.rank}
+            if (highestCard == null) {
+                // Highest Other card
+                highestCard = handInPlay.maxBy { it.value.rank }
+            }
+        }
+        if (highestCard != null) {
+            Log.i("#######", "${highestCard.key.playerName} wins with ${highestCard.value.faceValue()}")
+        } else {
+            Log.i("#######", "Error: no highest card found")
+        }
+    }
+
     // The trump and suit setting is done
-    // TODO: next determine who wins the trick
+    // TODO: fix bug having too many cards at start of 2nd trick
+    // TODO: add trick loop to play all tricks
+    // TODO: determine hand winner
     fun playGame() {
         shuffleCards()
-        dealCards()
-        showCards()
-        dealerSetsTrump()
-        playTrick()
-        showHandInPlay()
-        
+        for (trick in 1..5) {
+            Log.i("#######", "==== Trick $trick =====")
+            dealCards()
+            showCards()
+            dealerSetsTrump()
+            playersPlayTrick()
+            showHandInPlay()
+            determineTrickWinner()
+            Log.i("#######", "=======================")
+        }
     }
 }
